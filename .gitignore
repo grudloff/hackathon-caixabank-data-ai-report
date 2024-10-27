@@ -54,3 +54,6 @@ venv/
 
 # data files
 *.csv
+
+# Jupyter notebooks
+*.ipynb
