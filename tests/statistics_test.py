@@ -1,4 +1,4 @@
-from data.data_functions import (
+from src.data.data_functions import (
     earnings_and_expenses,
     expenses_summary,
     cash_flow_summary,
@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 import os
 import shutil
 from pathlib import Path
+import logging
 
 plt.switch_backend("Agg")
 sample_data = pd.read_csv("data/raw/transactions_data.csv", parse_dates=["date"])
 image_folder = "reports/figures"
-
 
 def test_earnings_and_expenses_1():
     df, user_id, start_date, end_date = (
@@ -33,6 +33,7 @@ def test_earnings_and_expenses_1():
         pd.testing.assert_frame_equal(answer, expected_answer)
         test_passed = True
     except Exception as e:
+        print(e)
         print("Not the expected output.")
         test_passed = False
     assert test_passed
@@ -49,10 +50,13 @@ def test_earnings_and_expenses_2():
         "2013-01-01",
         "2020-01-31",
     )
-    try:
-        answer = earnings_and_expenses(df, user_id, start_date, end_date)
-    except:
-        answer = pd.DataFrame()
+    # try:
+    #     answer = earnings_and_expenses(df, user_id, start_date, end_date)
+    # except Exception as e:
+    #     logging.info("Error in generating the image.")
+    #     logging.info(e)
+    #     answer = pd.DataFrame()
+    answer = earnings_and_expenses(df, user_id, start_date, end_date)
     condition = Path(f"{image_folder}/earnings_and_expenses.png").is_file()
 
     assert condition
@@ -265,3 +269,23 @@ def test_cash_flow_summary_2():
         test_passed = False
 
     assert test_passed
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+    logging.info("Running tests.")
+    logging.info("Testing earnings_and_expenses function.")
+    logging.info("Test 1: Testing the output of the function.")
+    test_earnings_and_expenses_1()
+    logging.info("Test 2: Testing the image generation.")
+    test_earnings_and_expenses_2()
+    logging.info("Testing expenses_summary function.")
+    logging.info("Test 1: Testing the output of the function.")
+    test_expenses_summary_1()
+    logging.info("Test 2: Testing the image generation.")
+    test_expenses_summary_2()
+    logging.info("Testing cash_flow_summary function.")
+    logging.info("Test 1: Testing the output of the function. Weekly aggregation.")
+    test_cash_flow_summary_1()
+    logging.info("Test 2: Testing the output of the function. Monthly aggregation.")
+    test_cash_flow_summary_2()
+    logging.info("All tests passed.")

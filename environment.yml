@@ -12,8 +12,12 @@ dependencies:
   - seaborn=0.13.2
   - fpdf2=2.8.1
   - pytest=8.3.3
+  - xgboost
+  - scikit-learn
   - tqdm
   - ipykernel
+  - lightning
   - pip:
     - ollama==0.3.3
     - langchain-ollama==0.2.0
+    - pytorch-forecasting

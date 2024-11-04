@@ -54,6 +54,13 @@ venv/
 
 # data files
 *.csv
+*.json
 
 # Jupyter notebooks
 *.ipynb
+
+# Pickle files
+*.pkl
+
+# modules
+*.egg-info/
