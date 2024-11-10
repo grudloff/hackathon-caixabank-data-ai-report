@@ -1,6 +1,11 @@
 from langchain_ollama import ChatOllama
 import pandas as pd
 
+from langchain_core.prompts import ChatPromptTemplate
+
+from tools import (earnings_and_expenses, expenses_summary, cash_flow_summary,
+                   get_days_in_month, check_client_data_exists, check_dates_exist_for_client
+                     )
 
 def run_agent(df: pd.DataFrame, client_id: int, input: str) -> dict:
     """
@@ -32,10 +37,34 @@ def run_agent(df: pd.DataFrame, client_id: int, input: str) -> dict:
             }
 
     """
-    tools = []
+    tools = [earnings_and_expenses, expenses_summary, cash_flow_summary, get_days_in_month,
+             check_client_data_exists, check_dates_exist_for_client]
     model = ChatOllama(model="llama3.2:1b", temperature=0)
+    model.bind_tools(tools)
     pdf_output_folder = "reports/"
-    # ---
+
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                '''
+                You are an AI agent. Your tasks are:
+                1. Extract the start and end dates from the following user input:
+                "{user_input}"
+                2. Use the extracted dates, {client_id}, and {df} to generate a summary report in PDF format by invoking the necessary functions.
+                '''
+            ),
+            ("human", "{input}"),
+        ]
+    )
+
+    chain = prompt | model
+    chain.run(
+        user_input=input,
+        client_id=client_id,
+        df=df
+    )
+
     variables_dict = {
         "start_date": "YYYY-MM-DD",
         "end_date": "YYYY-MM-DD",

@@ -26,6 +26,12 @@ dist/
 # JetBrains IDE
 .idea/
 
+# vs code
+.vscode/
+
+# pytorch lightning
+lightning_logs/
+
 # Unit test reports
 TEST*.xml
 

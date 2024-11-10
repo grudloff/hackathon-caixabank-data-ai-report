@@ -153,7 +153,7 @@ def get_fraud_labels() -> pd.DataFrame:
     result["label"] = result["label"].map({"No": 0, "Yes": 1}).astype(int)
     return result
 
-def earnings_and_expenses(df: pd.DataFrame, client_id: int, start_date: str, end_date: str) -> pd.DataFrame:
+def earnings_and_expenses(df: pd.DataFrame, client_id: int, start_date: str, end_date: str, plot=True, verbose=True) -> pd.DataFrame:
     """
     For the period defined in between start_date and end_date (both included), get the client data available and return
     a pandas DataFrame with the Earnings and Expenses total amount for the period range and user given.The expected columns are:
@@ -181,6 +181,12 @@ def earnings_and_expenses(df: pd.DataFrame, client_id: int, start_date: str, end
 
     """
 
+    if not verbose:
+        # save current logging level
+        level = logging.getLogger().getEffectiveLevel()
+        # set logging level to ERROR
+        logging.getLogger().setLevel(logging.ERROR)
+
     logging.info("Starting earnings and expenses")
     logging.info("Preprocessing data")
     if isinstance(df["amount"].iloc[0], str):
@@ -196,16 +202,21 @@ def earnings_and_expenses(df: pd.DataFrame, client_id: int, start_date: str, end
     earnings = round(earnings, 2)
     expenses = round(expenses, 2)
 
-    logging.info("Creating bar plot")
-    earnings_df = pd.DataFrame({"Earnings": [earnings], "Expenses": [expenses]})
-    earnings_df.plot.bar(title="Earnings and Expenses")
-    plt.ylabel("Amount")
-    plt.xticks(rotation=0)
-    plt.legend().set_visible(False)
-    logging.info("Saving plot")
-    if not os.path.exists("reports/figures"):
-        os.makedirs("reports/figures")
-    plt.savefig("reports/figures/earnings_and_expenses.png")
+    if plot:
+        logging.info("Creating bar plot")
+        earnings_df = pd.DataFrame({"Earnings": [earnings], "Expenses": [expenses]})
+        earnings_df.plot.bar(title="Earnings and Expenses")
+        plt.ylabel("Amount")
+        plt.xticks(rotation=0)
+        plt.legend().set_visible(False)
+        logging.info("Saving plot")
+        if not os.path.exists("reports/figures"):
+            os.makedirs("reports/figures")
+        plt.savefig("reports/figures/earnings_and_expenses.png")
+    
+    if not verbose:
+        # set logging level back to previous level
+        logging.getLogger().setLevel(level)
 
     return pd.DataFrame({"Earnings": [earnings], "Expenses": [expenses]})
 
@@ -298,7 +309,7 @@ def expenses_summary(df: pd.DataFrame, client_id: int, start_date: str=None, end
 
 
 def cash_flow_summary(
-    df: pd.DataFrame, client_id: int, start_date: str, end_date: str
+    df: pd.DataFrame, client_id: int, start_date: str=None, end_date: str=None, verbose=True
 ) -> pd.DataFrame:
     """
     For the period defined by start_date and end_date (both inclusive), retrieve the available client data and return a Pandas DataFrame containing cash flow information.
@@ -333,6 +344,12 @@ def cash_flow_summary(
     """
     MONTHLY_THRESHOLD = 60
 
+    if not verbose:
+        # save current logging level
+        level = logging.getLogger().getEffectiveLevel()
+        # set logging level to ERROR
+        logging.getLogger().setLevel(logging.ERROR)
+
     logging.info("Starting cash flow summary")
     logging.info("Preprocessing data")
     if isinstance(df["amount"].iloc[0], str):
@@ -340,6 +357,10 @@ def cash_flow_summary(
 
     logging.info("Filtering data")
     client_df = df[df["client_id"] == client_id]
+    if start_date is None:
+        start_date = pd.to_datetime(client_df["date"].min()).strftime("%Y-%m-%d")
+    if end_date is None:
+        end_date = pd.to_datetime(client_df["date"].max()).strftime("%Y-%m-%d")
     client_df = client_df[(client_df["date"] >= start_date) & (client_df["date"] <= end_date)]
     client_df = client_df[["date", "amount"]]
     client_df["date"] = pd.to_datetime(client_df["date"])
@@ -384,6 +405,10 @@ def cash_flow_summary(
     client_df = client_df.round(2)
     client_df.columns = ["Date", "Inflows", "Outflows", "Net Cash Flow", "% Savings"]
     logging.info("Cash flow summary finished")
+
+    if not verbose:
+        # set logging level back to previous level
+        logging.getLogger().setLevel(level)
 
     return client_df
 
