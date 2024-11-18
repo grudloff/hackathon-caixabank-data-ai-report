@@ -1,4 +1,5 @@
-from src.data.data_functions import get_fraud_labels, get_transactions_dataset, cash_flow_summary, earnings_and_expenses
+from src.data.data_functions import (get_fraud_labels, get_transactions_dataset, cash_flow_summary, earnings_and_expenses,
+                                     get_clients_dataset)
 
 from xgboost import XGBClassifier
 from sklearn.model_selection import GridSearchCV
@@ -53,7 +54,7 @@ def get_cash_flow_dataset(transactions_df: pd.DataFrame) -> pd.DataFrame:
     cash_flow_df = cash_flow_df.reset_index(drop=True)
     return cash_flow_df
 
-def load_forecast() -> pd.DataFrame:
+def load_forecast(use_client_info: bool = False, add_month: bool=False) -> pd.DataFrame:
     logging.info("Loading the data")
     transactions = get_transactions_dataset()
     transactions.set_index("transaction_id", inplace=True)
@@ -67,6 +68,14 @@ def load_forecast() -> pd.DataFrame:
     df = df[~df["label"].isna()]
     df = df.drop(columns=["label"])
     df = get_cash_flow_dataset(df)
+    # augment data
+    if add_month:
+        logging.info("Adding month information")
+        df["month"] = df["date"].dt.month
+    if use_client_info:
+        logging.info("Adding client information")
+        client_info = get_clients_dataset()
+        df = df.merge(client_info, on="client_id", how="left")
     return df
 
 def load_fraudulent() -> pd.DataFrame:
@@ -438,7 +447,7 @@ def train_forecast():
     For this an LSTM model will be used.
     """
 
-    df = load_forecast()
+    df = load_forecast(use_client_info=True, add_month=True)
 
     # print columns 
     logging.info("Columns")
@@ -480,15 +489,24 @@ def train_forecast():
     print(train_df.date.value_counts())
     print(train_df["date"].max())
 
+    # Define static features
+    static_reals = [
+        'birth_month', 'birth_year', 'credit_score', 'current_age',
+        'latitude', 'longitude', 'num_credit_cards',
+        'per_capita_income', 'retirement_age', 'total_debt',
+        'yearly_income'
+    ]
+
     timeseries_dataset_params={
         "time_idx": "date",
         "target": "outflows",
         "group_ids": ["client_id"],
+        "static_reals": static_reals,
         "allow_missing_timesteps": True,
         "max_encoder_length": int(train_df["date"].max()),
         "min_encoder_length": 3,
         "max_prediction_length": 3,
-        "time_varying_known_reals": ["date"],
+        "time_varying_known_reals": ["date", "month"],
         "time_varying_unknown_reals": ["inflows", "outflows", "net_cash_flow", "percentage_savings"],
     }
     train_dataset = TimeSeriesDataSet(train_df, **timeseries_dataset_params)

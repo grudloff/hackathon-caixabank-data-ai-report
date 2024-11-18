@@ -12,3 +12,4 @@ lightning
 xgboost
 scikit-learn
 pytorch-forecasting
+reportlab

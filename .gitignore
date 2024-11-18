@@ -68,5 +68,8 @@ venv/
 # Pickle files
 *.pkl
 
+# Pytorch checkpoints
+*.ckpt
+
 # modules
 *.egg-info/

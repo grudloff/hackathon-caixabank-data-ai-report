@@ -1,7 +1,9 @@
-from agent.agent import run_agent
+from src.agent.agent import run_agent
 import os
 import pandas as pd
 import shutil
+
+import logging
 
 current_folder = os.path.dirname(os.path.abspath(__file__))
 parent_folder = os.path.dirname(current_folder)
@@ -123,3 +125,20 @@ def test_agent_3():
         print(e)
         condition_pdf = False
     assert condition_pdf and test_passed
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    logging.info("Testing tools")
+    logging.info("Test 1")
+    test_agent_1()
+    logging.info("Test 1 passed")
+    logging.info("*" * 50)
+    logging.info("Test 2")
+    test_agent_2()
+    logging.info("Test 2 passed")
+    logging.info("*" * 50)
+    logging.info("Test 3")
+    test_agent_3()
+    logging.info("Test 3 passed")
+    logging.info("*" * 50)
+    logging.info("All tests passed")
