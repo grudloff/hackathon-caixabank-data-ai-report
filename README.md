@@ -15,7 +15,7 @@ This repository contains my submission for the **Caixabank Data AI Hackathon**. 
 ### **Task 3: Fraud Detection Model**
 - **Objective:** Build a model to classify transactions as fraudulent or non-fraudulent.
 - **Approach:** Utilized supervised learning techniques with handling for class imbalance. The model was trained on labeled data and evaluated using the Balanced Accuracy score.
-- **Model:** Utilized a Xgboost model with SMOTE and weighted classes to handle class imbalance.
+- **Model:** Utilized a Xgboost model with undersampling the majority class and weighted classes to handle dataset imbalance.
 
 ### **Task 4: Expenses Forecasting**
 - **Objective:** Forecast future monthly expenses for each client.
